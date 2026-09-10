@@ -1,0 +1,8 @@
+streamlit>=1.35,<2
+pandas>=2.0,<3
+plotly>=5.18,<7
+openpyxl>=3.1,<4
+reportlab>=4.0,<5
+fastapi>=0.110,<1
+uvicorn[standard]>=0.29,<1
+requests>=2.31,<3
