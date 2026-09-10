@@ -1,0 +1,122 @@
+{
+  "name": "跨境电商经营周报",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "10 8 * * 1"
+            }
+          ]
+        }
+      },
+      "id": "98e9175f-12dd-4d1f-aad5-6fc719b9e0cd",
+      "name": "每周一08:10触发",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://report-api:8000/generate-report",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\"period\":\"周报\",\"source\":\"platform\"}",
+        "options": {}
+      },
+      "id": "443d4618-3464-4682-b4a7-18db616f07ec",
+      "name": "生成周报",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [272, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "handechuan04@gmail.com",
+        "subject": "=健身器材跨境电商经营周报 - {{$json.data_date}}",
+        "emailType": "text",
+        "message": "={{$json.report_markdown}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [736, 0],
+      "id": "5f562d57-3f58-472c-82ee-96a94d47ab90",
+      "name": "Send a message",
+      "webhookId": "c40e6465-803a-44aa-9495-d90f62df1008",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "37acKJMiBm2HWiyA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.pushplus.plus/send",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"token\":\"{{$env.PUSHPLUS_TOKEN}}\",\"title\":\"周报发送失败\",\"content\":\"周报发送到 Gmail 失败，n8n 已自动重试 3 次，请检查执行记录。\",\"template\":\"txt\"}",
+        "options": {}
+      },
+      "id": "a4b8c0b0-5b6f-4a9d-ae02-0b3f696e6f31",
+      "name": "PushPlus失败通知",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1008, 160]
+    }
+  ],
+  "connections": {
+    "每周一08:10触发": {
+      "main": [
+        [
+          {
+            "node": "生成周报",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "生成周报": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [],
+        [
+          {
+            "node": "PushPlus失败通知",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Asia/Shanghai"
+  },
+  "active": false
+}
