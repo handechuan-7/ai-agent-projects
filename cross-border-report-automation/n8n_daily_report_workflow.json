@@ -1,0 +1,49 @@
+{
+  "name": "跨境电商经营日报",
+  "nodes": [
+    {
+      "parameters": {"rule": {"interval": [{"field": "cronExpression", "expression": "0 8 * * *"}]}},
+      "id": "schedule",
+      "name": "每天08:00触发",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://report-api:8000/generate-report",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "{\n  \"period\": \"日报\",\n  \"source\": \"sample\"\n}",
+        "options": {}
+      },
+      "id": "report",
+      "name": "生成日报",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [520, 300]
+    },
+    {
+      "parameters": {
+        "fromEmail": "运营日报 <reports@example.com>",
+        "toEmail": "operator@example.com",
+        "subject": "跨境电商经营日报 - {{$json.data_date}}",
+        "emailType": "text",
+        "message": "={{$json.report_markdown}}"
+      },
+      "id": "email",
+      "name": "发送日报",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [780, 300]
+    }
+  ],
+  "connections": {
+    "每天08:00触发": {"main": [[{"node": "生成日报", "type": "main", "index": 0}]]},
+    "生成日报": {"main": [[{"node": "发送日报", "type": "main", "index": 0}]]}
+  },
+  "active": false,
+  "settings": {},
+  "versionId": "cross-border-report-mvp"
+}
